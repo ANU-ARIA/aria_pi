@@ -6,7 +6,9 @@ from pyzbar import pyzbar
 CAM_ID = 0
 CAM_WIDTH = 480
 CAM_HEIGHT = 320
+
 signal = 'N'
+data = ""
 
 lower_blue = np.array([90, 89, 95])
 upper_blue = np.array([120,255,255])
@@ -66,7 +68,8 @@ def detect_goods(filter_blue_image, filter_red_image, frame):
         #print("no goods ! signal: N \n\n")
         x = 9999 
         y = 9999
-        return x, signal, frame
+        data = ""
+        return x, signal, data, frame
  
     ((x, y), radius) = cv.minEnclosingCircle(c) 
     x = int(x)
@@ -78,18 +81,19 @@ def detect_goods(filter_blue_image, filter_red_image, frame):
         #cv.circle(frame, (int(x), int(y)), int(radius), (0, 255, 255), 2)
         cv.circle(frame, (int(x), int(y)), 5, (0, 255, 255), -1)
         cv.putText(frame, str(x)+' , '+str(y), (x, y + 40), cv.FONT_HERSHEY_PLAIN, 1.0, (0, 255, 255), 2)
-        return x, signal, frame
+        return x, signal, data, frame
     
     else:
         #print("circle is too small \n\n")
         x = -1
         y = -1
-        return x, signal, frame
+        data = ""
+        return x, signal, data, frame
 
 def read_barcode(frame):
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
     decoded = pyzbar.decode(gray)
-    barcode_data = "xxxx"
+    barcode_data = ""
     
     if len(decoded) > 0:
         for d in decoded: 
@@ -114,13 +118,11 @@ def cam(cap):
     
     (filter_blue_image, filter_red_image) = image_filter(frame)
     
-    x, signal, frame = detect_goods(filter_blue_image, filter_red_image, frame)
-    cv.rectangle(frame, (80, 0), (400, 320), (0, 0, 255), 2)
+    x, signal, data, frame = detect_goods(filter_blue_image, filter_red_image, frame)
+    cv.rectangle(frame, (100, 0), (380, 320), (0, 0, 255), 2)
     
     cv.imshow('frame', frame)
     cv.imshow('filter_blue_mask', filter_blue_image)
     cv.imshow('filter_red_mask', filter_red_image)
     
-    return x, signal
-    
-       
+    return x, signal, data        
